@@ -1,8 +1,24 @@
-import { Box, Flex, Text, IconButton, useColorMode, Switch, Tooltip } from "@chakra-ui/react";
+import { 
+  Box, 
+  Flex, 
+  Text, 
+  IconButton, 
+  useColorMode, 
+  Switch, 
+  Tooltip,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  useDisclosure,
+  Button
+} from "@chakra-ui/react";
 import { useDraggable } from "@dnd-kit/core";
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { Temporal } from '@js-temporal/polyfill';
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { TodoForm } from "./TodoForm";
 
 interface TodoItemProps {
@@ -18,12 +34,24 @@ export function TodoItem({ todo, onEdit, onDelete, onStatusChange }: TodoItemPro
   });
   const { colorMode } = useColorMode();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure();
+  const cancelRef = useRef<HTMLButtonElement>(null);
 
   const isOverdue = todo.dueDate && 
     Temporal.PlainDate.compare(
       Temporal.PlainDate.from(todo.dueDate),
       Temporal.Now.plainDateISO()
     ) < 0;
+
+  const handleStatusChange = () => {
+    const newStatus = todo.status === 'completed' ? 'active' : 'completed';
+    onStatusChange(todo.id, newStatus);
+  };
+
+  const handleDelete = () => {
+    onDelete(todo.id);
+    onDeleteClose();
+  };
 
   return (
     <>
@@ -52,11 +80,9 @@ export function TodoItem({ todo, onEdit, onDelete, onStatusChange }: TodoItemPro
           <Flex justify="space-between" align="center" mb={3}>
             <Switch
               isChecked={todo.status === 'completed'}
-              onChange={() => onStatusChange(
-                todo.id,
-                todo.status === 'completed' ? 'active' : 'completed'
-              )}
+              onChange={handleStatusChange}
               colorScheme="green"
+              size="md"
             />
             <Flex gap={2}>
               <Tooltip label="Edit">
@@ -76,7 +102,7 @@ export function TodoItem({ todo, onEdit, onDelete, onStatusChange }: TodoItemPro
                   size="sm"
                   variant="ghost"
                   colorScheme="red"
-                  onClick={() => onDelete(todo.id)}
+                  onClick={onDeleteOpen}
                 />
               </Tooltip>
             </Flex>
@@ -123,6 +149,33 @@ export function TodoItem({ todo, onEdit, onDelete, onStatusChange }: TodoItemPro
         onClose={() => setIsEditModalOpen(false)}
         todo={todo}
       />
+
+      <AlertDialog
+        isOpen={isDeleteOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onDeleteClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Delete Task
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure you want to delete "{todo.title}"? This action cannot be undone.
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onDeleteClose}>
+                Cancel
+              </Button>
+              <Button colorScheme="red" onClick={handleDelete} ml={3}>
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </>
   );
 } 

@@ -6,18 +6,26 @@ import {
   Heading,
   useColorMode,
   useColorModeValue,
+  Tooltip,
 } from "@chakra-ui/react";
-import { AddIcon, MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { AddIcon, MoonIcon, SunIcon, RepeatIcon } from "@chakra-ui/icons";
 import { useState } from "react";
 import { TodoBoard } from "./components/TodoBoard";
 import { TodoForm } from "./components/TodoForm";
 import { observer } from "mobx-react-lite";
+import { useStore } from "./store";
+import { loadSampleData } from "./utils/testData";
 
 export const App = observer(() => {
   const { colorMode, toggleColorMode } = useColorMode();
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const bgColor = useColorModeValue("gray.50", "gray.900");
   const borderColor = useColorModeValue("gray.200", "gray.700");
+  const store = useStore();
+
+  const handleLoadSampleData = () => {
+    loadSampleData(store);
+  };
 
   return (
     <Box minH="100vh" bg={bgColor}>
@@ -41,6 +49,16 @@ export const App = observer(() => {
               >
                 Add Task
               </Button>
+              <Tooltip label="Load sample data">
+                <Button
+                  leftIcon={<RepeatIcon />}
+                  variant="outline"
+                  colorScheme="green"
+                  onClick={handleLoadSampleData}
+                >
+                  Load Sample
+                </Button>
+              </Tooltip>
               <Button
                 onClick={toggleColorMode}
                 variant="ghost"

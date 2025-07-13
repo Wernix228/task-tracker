@@ -78,6 +78,7 @@ interface TodoStore {
   setStatus: (id: string, status: TodoStatus) => void;
   setFilter: (filter: TodoFilter) => void;
   reorderTodos: (startIndex: number, endIndex: number) => void;
+  reorderTodoToEnd: (id: string, status: TodoStatus) => void;
 }
 
 interface TodoFilter {
